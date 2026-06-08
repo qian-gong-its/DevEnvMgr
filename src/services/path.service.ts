@@ -21,6 +21,11 @@ export const getWorkspaceDir = (): string =>
 export const getDotfilesDir = (): string =>
   join(getWorkspaceDir(), 'eu.gongqian.dotfiles');
 
+export const getProjectRootDir = (): string => process.cwd();
+
+export const resolveProjectPath = (...paths: string[]): string =>
+  resolve(getProjectRootDir(), ...paths);
+
 export const resolveUserPath = (...paths: string[]): string =>
   join(getUserHomeDir(), ...paths);
 
