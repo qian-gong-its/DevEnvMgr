@@ -1,0 +1,48 @@
+{
+  "name": "templates",
+  "dotfilesPath": "templates",
+  "items": [
+    {
+      "id": "node-ts",
+      "framework": "node",
+      "language": "ts",
+      "type": "production",
+      "dotfilesPath": "templates/node-ts"
+    },
+    {
+      "id": "react-ts",
+      "framework": "react",
+      "language": "ts",
+      "type": "production",
+      "dotfilesPath": "templates/react-ts"
+    },
+    {
+      "id": "cli-ts",
+      "framework": "",
+      "language": "ts",
+      "type": "archive",
+      "dotfilesPath": "templates/archive/cli-js"
+    },
+    {
+      "id": "react-js",
+      "framework": "react",
+      "language": "js",
+      "type": "archive",
+      "dotfilesPath": "templates/archive/react-js"
+    },
+    {
+      "id": "vanilla-js",
+      "framework": "vanilla",
+      "language": "js",
+      "type": "archive",
+      "dotfilesPath": "templates/archive/vanilla-js"
+    },
+    {
+      "id": "vanilla-ts",
+      "framework": "vanilla",
+      "language": "ts",
+      "type": "archive",
+      "dotfilesPath": "templates/archive/vanilla-ts"
+    }
+  ]
+}
