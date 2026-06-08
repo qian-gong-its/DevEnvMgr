@@ -1,0 +1,31 @@
+# Dependency directories
+node_modules/
+
+# Build output directories
+build/
+dist/
+out/
+
+# Caches and logs
+.cache/
+*.log
+
+# Static assets (usually don't need formatting and can be large)
+assets/
+public/
+*.mp4
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+
+# Lock files (not recommended to format manually)
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Temporary folders
+.temp/
+.tmp/

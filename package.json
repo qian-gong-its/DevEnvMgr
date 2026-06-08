@@ -1,0 +1,25 @@
+{
+  "name": "cli-ts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "lint": "eslint .",
+    "format": "prettier . --write",
+    "check": "npm run format && npm run lint && npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "globals": "^16.0.0",
+    "prettier": "^3.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.0.0"
+  }
+}
