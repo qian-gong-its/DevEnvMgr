@@ -20,3 +20,13 @@ const generateLogFilePath = (opt: CMD = 'DIFF', fileName = 'default') => {
 };
 
 console.log(generateLogFilePath());
+
+export const writeLogLine = (opt: CMD, fileName: string, message: string) => {
+  const timestamp = new Date().toTimeString().split(' ')[0];
+
+  const logLine = `[${timestamp}] ${message}\n`;
+
+  console.log(logLine);
+
+  fs.appendFileSync(generateLogFilePath(opt, fileName), logLine, 'utf-8');
+};
