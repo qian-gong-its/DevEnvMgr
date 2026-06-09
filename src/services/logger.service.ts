@@ -1,4 +1,5 @@
-import fs from "node:fs";
+import fs from 'node:fs';
+import path from 'node:path';
 
 import { getProjectRootDir, resolveProjectPath } from './path.service.js';
 
@@ -10,4 +11,12 @@ if (!fs.existsSync(logDir)) {
   });
 }
 
-console.log(logDir);
+export type CMD = 'DIFF' | 'PULL' | 'PUSH';
+
+const generateLogFilePath = (opt: CMD = 'DIFF', fileName = 'default') => {
+  const timestamp = new Date().toISOString().split('T')[0];
+
+  return path.join(logDir, `${timestamp}_${opt.toLowerCase()}-${fileName}.log`);
+};
+
+console.log(generateLogFilePath());
