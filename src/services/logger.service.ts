@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import { getProjectRootDir, resolveProjectPath } from './path.service.js';
 
-const logDir = resolveProjectPath(getProjectRootDir(), 'logs');
+const logDir = resolveProjectPath('logs');
 
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, {
@@ -16,10 +16,10 @@ export type CMD = 'DIFF' | 'PULL' | 'PUSH';
 const generateLogFilePath = (opt: CMD = 'DIFF', fileName = 'default') => {
   const timestamp = new Date().toISOString().split('T')[0];
 
-  return path.join(logDir, `${timestamp}_${opt.toLowerCase()}-${fileName}.log`);
+  return path.join(logDir, `${timestamp}_${opt.toLowerCase()}_${fileName}.log`);
 };
 
-console.log(generateLogFilePath());
+// console.log(generateLogFilePath());
 
 export const writeLogLine = (opt: CMD, fileName: string, message: string) => {
   const timestamp = new Date().toTimeString().split(' ')[0];
