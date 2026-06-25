@@ -1,5 +1,5 @@
 {
-  "name": "user-setting",
+  "name": "user-settings",
   "common": [
     {
       "id": "gitconfig",
@@ -54,6 +54,14 @@
       "dotfilesPath": "user/linux/.bash_aliases",
       "targets": {
         "linux": ".bash_aliases"
+      }
+    },
+    {
+      "id": "bash_functions",
+      "description": "Linux functions",
+      "dotfilesPath": "user/linux/.bash_functions",
+      "targets": {
+        "linux": ".bash_functions"
       }
     },
     {

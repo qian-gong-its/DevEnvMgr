@@ -1,6 +1,8 @@
 {
   "name": "templates",
   "dotfilesPath": "templates",
+  "frameworks": ["cli", "node", "react", "spring", "vanilla"],
+  "languages": ["java", "js", "ts"],
   "items": [
     {
       "id": "node-ts",
@@ -18,10 +20,10 @@
     },
     {
       "id": "cli-ts",
-      "framework": "",
+      "framework": "cli",
       "language": "ts",
       "type": "archive",
-      "dotfilesPath": "templates/archive/cli-js"
+      "dotfilesPath": "templates/archive/cli-ts"
     },
     {
       "id": "react-js",
