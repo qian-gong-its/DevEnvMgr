@@ -1,32 +1,211 @@
-import { homedir, platform } from 'node:os';
-import { join, resolve } from 'node:path';
+import { homedir } from 'node:os';
+import { isAbsolute, resolve } from 'node:path';
 
-type Platform = 'linux' | 'macos' | 'windows' | 'unknown';
+/**
+ * Returns the DevEnvMgr project root.
+ *
+ * DevEnvMgr is currently expected to be started from its project root,
+ * therefore the current working directory is treated as the DEM root.
+ *
+ * Note:
+ * This is suitable during development. If DevEnvMgr is later installed as
+ * a global CLI, the application root should be resolved independently from
+ * process.cwd().
+ */
+export const getDemRootDir = (): string => process.cwd();
 
-const PLATFORM_MAP = {
-  linux: 'linux',
-  darwin: 'macos',
-  win32: 'windows',
-} as const;
+/**
+ * Resolves a path below the DevEnvMgr project root.
+ *
+ * Typical usage:
+ *   resolveDemPath('src', 'config', 'templates.paths.json')
+ *   resolveDemPath('logs')
+ */
+export const resolveDemPath = (...paths: string[]): string =>
+  resolve(getDemRootDir(), ...paths);
 
-export const getPlatform = (): Platform => {
-  return PLATFORM_MAP[platform() as keyof typeof PLATFORM_MAP] ?? 'unknown';
-};
+// console.log(resolveDemPath('src', 'config', 'templates.paths.json'));
 
+/**
+ * Returns the current operating-system user's home directory.
+ *
+ * Examples:
+ *   Linux:   /home/qian
+ *   Windows: C:\Users\Qian
+ */
 export const getUserHomeDir = (): string => homedir();
 
+/**
+ * Resolves a filesystem path relative to the current user's home directory.
+ *
+ * Relative paths are resolved below UserHome.
+ * Absolute paths are preserved and may be extended with additional segments.
+ *
+ * This allows callers to use the same function for:
+ * - application defaults;
+ * - environment-variable values;
+ * - configuration-file values;
+ * - CLI destination arguments.
+ *
+ * Examples:
+ *   resolveUserHomePath('Workspace', 'my-project')
+ *     Linux:   /home/user/Workspace/my-project
+ *     Windows: C:\Users\User\Workspace\my-project
+ *
+ *   resolveUserHomePath('/mnt/projects', 'my-project')
+ *     Linux: /mnt/projects/my-project
+ *
+ *   resolveUserHomePath('D:\\Projects', 'my-project')
+ *     Windows: D:\Projects\my-project
+ */
+export const resolveUserHomePath = (
+  firstPath: string,
+  ...paths: string[]
+): string => {
+  const basePath = isAbsolute(firstPath)
+    ? firstPath
+    : resolve(getUserHomeDir(), firstPath);
+
+  return resolve(basePath, ...paths);
+};
+
+// console.log(resolveUserHomePath('Workspace', 'my-project'));
+
+/**
+ * Returns the current machine's local Workspace directory.
+ *
+ * Default:
+ *   <UserHome>/Workspace
+ *
+ * Optional override:
+ *   DEM_WORKSPACE_DIR
+ *
+ * The environment value may be:
+ * - relative to UserHome, for example: Workspace
+ * - absolute, for example: /data/Workspace
+ * - absolute on Windows, for example: D:\Workspace
+ */
 export const getWorkspaceDir = (): string =>
-  join(getUserHomeDir(), 'Workspace');
+  resolveUserHomePath(process.env.DEM_WORKSPACE_DIR?.trim() || 'Workspace');
 
+/**
+ * Resolves a path below the current machine's local Workspace directory.
+ *
+ * Examples:
+ *   resolveWorkspacePath('dotfiles')
+ *   resolveWorkspacePath('projects', 'my-api')
+ */
+export const resolveWorkspacePath = (...paths: string[]): string =>
+  resolve(getWorkspaceDir(), ...paths);
+
+/**
+ * Returns the current machine's local DevEnvMgr dotfiles directory.
+ *
+ * Default:
+ *   <Workspace>/dotfiles
+ *
+ * Optional override:
+ *   <Workspace>/DEM_DOTFILES_DIR
+ *
+ * If DEM_DOTFILES_DIR is not configured, the directory is derived from the
+ * configured Workspace directory. This means changing DEM_WORKSPACE_DIR also
+ * changes the default dotfiles location.
+ */
 export const getDotfilesDir = (): string =>
-  join(getWorkspaceDir(), 'eu.gongqian.dotfiles');
+  resolveWorkspacePath(process.env.DEM_DOTFILES_DIR?.trim() || 'dotfiles');
 
-export const getProjectRootDir = (): string => process.cwd();
+/**
+ * Resolves a managed resource path below the current machine's local
+ * dotfiles directory.
+ *
+ * Examples:
+ *   resolveDotfilesPath('templates', 'node-ts')
+ *   resolveDotfilesPath('user', 'linux', '.bashrc')
+ */
+export const resolveDotfilesPath = (...paths: string[]): string =>
+  resolve(getDotfilesDir(), ...paths);
 
-export const resolveProjectPath = (...paths: string[]): string =>
-  resolve(getProjectRootDir(), ...paths);
+/*
+console.log({
+  cwd: process.cwd(),
+  dotfilesEnv: process.env.DEM_DOTFILES_DIR,
+  resolved: resolveDotfilesPath('templates/node-ts'),
+});
+*/
 
-export const resolveUserPath = (...paths: string[]): string =>
-  join(getUserHomeDir(), ...paths);
+/**
+ * Returns the path through which the current virtual machine accesses the
+ * physical host's shared Workspace directory.
+ *
+ * The environment variable must contain the path as visible inside the
+ * current VM. It must not contain the physical host's native filesystem path.
+ *
+ * Required environment variable:
+ *   DEM_HOST_WORKSPACE_MOUNT
+ *
+ * Examples:
+ *
+ * Windows host → Linux VM:
+ *   DEM_HOST_WORKSPACE_MOUNT=/mnt/hgfs/Workspace
+ *
+ * Ubuntu host → Linux VM:
+ *   DEM_HOST_WORKSPACE_MOUNT=/mnt/hgfs/Workspace
+ *
+ * Ubuntu host → Windows VM:
+ *   DEM_HOST_WORKSPACE_MOUNT=Z:\Workspace
+ *
+ * Windows or Ubuntu host → Windows VM through UNC:
+ *   DEM_HOST_WORKSPACE_MOUNT=\\vmware-host\Shared Folders\Workspace
+ *
+ * The host operating system is irrelevant to DevEnvMgr. Only the mount path
+ * visible from the current VM matters.
+ */
+export const getHostWorkspaceMountDir = (): string => {
+  const configuredPath = process.env.DEM_HOST_WORKSPACE_MOUNT?.trim();
 
-// console.log(resolveUserPath('.config', 'Code', 'User', 'settings.json'));
+  if (!configuredPath) {
+    throw new Error(
+      'Missing required environment variable: ' + 'DEM_HOST_WORKSPACE_MOUNT',
+    );
+  }
+
+  return resolve(configuredPath);
+};
+
+/**
+ * Resolves a path below the physical host's Workspace mount as seen from
+ * the current VM.
+ *
+ * Examples:
+ *   resolveHostWorkspacePath('dotfiles')
+ *   resolveHostWorkspacePath('dotfiles', 'templates', 'node-ts')
+ */
+export const resolveHostWorkspacePath = (...paths: string[]): string =>
+  resolve(getHostWorkspaceMountDir(), ...paths);
+
+/**
+ * Returns the physical host's dotfiles directory through the VMware
+ * Workspace mount.
+ *
+ * Result:
+ *   <DEM_HOST_WORKSPACE_MOUNT>/dotfiles
+ */
+export const getHostDotfilesDir = (): string =>
+  resolveHostWorkspacePath('dotfiles');
+
+/**
+ * Resolves a managed resource path below the physical host's mounted
+ * dotfiles directory.
+ *
+ * This function is primarily intended for diff and sync operations between:
+ *
+ *   current VM dotfiles
+ *       ↕
+ *   physical host dotfiles
+ *
+ * Examples:
+ *   resolveHostDotfilesPath('templates', 'node-ts')
+ *   resolveHostDotfilesPath('user', 'linux', '.bashrc')
+ */
+export const resolveHostDotfilesPath = (...paths: string[]): string =>
+  resolve(getHostDotfilesDir(), ...paths);
